@@ -275,6 +275,43 @@ struct ViTWeight {
         }
     }
 
+    void ImportWeights(const std::string& model_dir)
+    {
+        DataType dtype = DataType::TYPE_INVALID;
+        if (std::is_same<T, half>::value) {
+            dtype = DataType::TYPE_FP16;
+        }
+        else if (std::is_same<T, float>::value) {
+            dtype = DataType::TYPE_FP32;
+        }
+
+        Tensor conv_kernel{MEMORY_GPU,
+                           dtype,
+                           std::vector<size_t>{embed_dim_, chn_num_, patch_size_, patch_size_},
+                           pre_encoder_conv_weights.kernel};  // OIHW
+        conv_kernel.loadNpy(model_dir + "/weights/conv_kernel.npy", MEMORY_GPU);
+        Tensor conv_bias{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, pre_encoder_conv_weights.bias};  // OIHW
+        conv_bias.loadNpy(model_dir + "/weights/conv_bias.npy", MEMORY_GPU);
+
+        if (with_cls_token_) {
+            Tensor cls_token{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, pre_transform_embeds.class_embed};
+            cls_token.loadNpy(model_dir + "/weights/cls_token.npy", MEMORY_GPU);
+        }
+
+        Tensor pos_embed{
+            MEMORY_GPU, dtype, std::vector<size_t>{1, seq_len_, embed_dim_}, pre_transform_embeds.position_embed};
+        pos_embed.loadNpy(model_dir + "/weights/pos_embed.npy", MEMORY_GPU);
+
+        Tensor ln_gamma{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, post_transformer_layernorm_weights.gamma};
+        ln_gamma.loadNpy(model_dir + "/weights/enc_ln_scale.npy", MEMORY_GPU);
+        Tensor ln_beta{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, post_transformer_layernorm_weights.beta};
+        ln_beta.loadNpy(model_dir + "/weights/enc_ln_bias.npy", MEMORY_GPU);
+
+        for (int i = 0; i < num_layer_; i++) {
+            vit_layer_weights[i].ImportWeights(model_dir, i);
+        }
+    }
+
     std::vector<ViTLayerWeight<T>> vit_layer_weights;
     LayerNormWeight<T>             post_transformer_layernorm_weights;
     ViTEmbeds<T>                   pre_transform_embeds;
@@ -293,16 +330,16 @@ private:
 
         is_maintain_buffer = true;
     }
-    int    embed_dim_;
-    int    inter_size_;
-    int    num_layer_;
-    int    img_size_;
-    int    patch_size_;
-    int    chn_num_;
-    int    seq_len_;
-    bool   is_maintain_buffer = false;
-    T*     weights_ptr[WEIGHT_N]{nullptr};
-    size_t weights_size[WEIGHT_N];
+    size_t  embed_dim_;
+    size_t  inter_size_;
+    size_t  num_layer_;
+    size_t  img_size_;
+    size_t  patch_size_;
+    size_t  chn_num_;
+    size_t  seq_len_;
+    bool    is_maintain_buffer = false;
+    T*      weights_ptr[WEIGHT_N]{nullptr};
+    size_t  weights_size[WEIGHT_N];
 };
 
 #undef WEIGHT_N

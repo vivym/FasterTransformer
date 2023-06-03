@@ -269,6 +269,59 @@ struct ViTLayerWeight {
         w16.saveNpy(std::string(buffer.str()) + "_ln2_bias.npy");
     }
 
+    void ImportWeights(const std::string& model_dir, int layer_idx)
+    {
+        DataType dtype = DataType::TYPE_INVALID;
+        if (std::is_same<T, half>::value) {
+            dtype = DataType::TYPE_FP16;
+        }
+        else if (std::is_same<T, float>::value) {
+            dtype = DataType::TYPE_FP32;
+        }
+
+        std::ostringstream buffer;
+        buffer << model_dir << "/weights/l" << layer_idx;
+
+        Tensor w1{
+            MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_, embed_dim_}, attention_weights.query_weight.kernel};
+        w1.loadNpy(std::string(buffer.str()) + "_q_kern.npy", MEMORY_GPU);
+        Tensor w2{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attention_weights.query_weight.bias};
+        w2.loadNpy(std::string(buffer.str()) + "_q_bias.npy", MEMORY_GPU);
+        Tensor w3{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_, embed_dim_}, attention_weights.key_weight.kernel};
+        w3.loadNpy(std::string(buffer.str()) + "_k_kern.npy", MEMORY_GPU);
+        Tensor w4{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attention_weights.key_weight.bias};
+        w4.loadNpy(std::string(buffer.str()) + "_k_bias.npy", MEMORY_GPU);
+        Tensor w5{
+            MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_, embed_dim_}, attention_weights.value_weight.kernel};
+        w5.loadNpy(std::string(buffer.str()) + "_v_kern.npy", MEMORY_GPU);
+        Tensor w6{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attention_weights.value_weight.bias};
+        w6.loadNpy(std::string(buffer.str()) + "_v_bias.npy", MEMORY_GPU);
+        Tensor w7{MEMORY_GPU,
+                  dtype,
+                  std::vector<size_t>{embed_dim_, embed_dim_},
+                  attention_weights.attention_output_weight.kernel};
+        w7.loadNpy(std::string(buffer.str()) + "_att_o_kern.npy", MEMORY_GPU);
+        Tensor w8{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attention_weights.attention_output_weight.bias};
+        w8.loadNpy(std::string(buffer.str()) + "_att_o_bias.npy", MEMORY_GPU);
+        Tensor w9{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attn_layernorm_weights.gamma};
+        w9.loadNpy(std::string(buffer.str()) + "_ln0_scale.npy", MEMORY_GPU);
+        Tensor w10{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, attn_layernorm_weights.beta};
+        w10.loadNpy(std::string(buffer.str()) + "_ln0_bias.npy", MEMORY_GPU);
+        Tensor w11{
+            MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_, inter_size_}, ffn_weights.intermediate_weight.kernel};
+        w11.loadNpy(std::string(buffer.str()) + "_ffn_inter_kern.npy", MEMORY_GPU);
+        Tensor w12{MEMORY_GPU, dtype, std::vector<size_t>{inter_size_}, ffn_weights.intermediate_weight.bias};
+        w12.loadNpy(std::string(buffer.str()) + "_ffn_inter_bias.npy", MEMORY_GPU);
+        Tensor w13{MEMORY_GPU, dtype, std::vector<size_t>{inter_size_, embed_dim_}, ffn_weights.output_weight.kernel};
+        w13.loadNpy(std::string(buffer.str()) + "_ffn_o_kern.npy", MEMORY_GPU);
+        Tensor w14{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, ffn_weights.output_weight.bias};
+        w14.loadNpy(std::string(buffer.str()) + "_ffn_o_bias.npy", MEMORY_GPU);
+        Tensor w15{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, ffn_layernorm_weights.gamma};
+        w15.loadNpy(std::string(buffer.str()) + "_ln2_scale.npy", MEMORY_GPU);
+        Tensor w16{MEMORY_GPU, dtype, std::vector<size_t>{embed_dim_}, ffn_layernorm_weights.beta};
+        w16.loadNpy(std::string(buffer.str()) + "_ln2_bias.npy", MEMORY_GPU);
+    }
+
     AttentionWeight<T> attention_weights;
     LayerNormWeight<T> attn_layernorm_weights;
     FfnWeight<T>       ffn_weights;
@@ -296,13 +349,13 @@ private:
 
         is_maintain_buffer = true;
     }
-    int    embed_dim_;
-    int    inter_size_;
-    int    layer_idx_;
-    bool   is_maintain_buffer = false;
-    T*     weights_ptr[WEIGHT_N]{nullptr};
-    size_t weights_size[WEIGHT_N];
-    bool   is_maintain_sp_buffer = false;
+    size_t  embed_dim_;
+    size_t  inter_size_;
+    int     layer_idx_;
+    bool    is_maintain_buffer = false;
+    T*      weights_ptr[WEIGHT_N]{nullptr};
+    size_t  weights_size[WEIGHT_N];
+    bool    is_maintain_sp_buffer = false;
 };
 
 #undef WEIGHT_N
