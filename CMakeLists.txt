@@ -430,9 +430,9 @@ target_link_libraries(transformer-shared PUBLIC
   -lnvToolsExt
 )
 endif()
-  
+
 if (ENABLE_FP8)
-target_link_libraries(transformer-shared PUBLIC 
+target_link_libraries(transformer-shared PUBLIC
   $<TARGET_OBJECTS:BertFP8>
   $<TARGET_OBJECTS:BertFP8Weight>
   $<TARGET_OBJECTS:DecoderSelfAttentionFP8Layer>
@@ -460,7 +460,7 @@ endif()
 set_target_properties(transformer-shared PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(transformer-shared PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 set_target_properties(transformer-shared PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(transformer-shared PUBLIC -lcudart -lcublas -lcublasLt -lcurand)
+target_link_libraries(transformer-shared PUBLIC -lcudart -lcublas -lcublasLt -lcudnn -lcurand)
 
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/FasterTransformer)
