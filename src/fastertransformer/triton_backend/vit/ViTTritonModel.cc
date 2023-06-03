@@ -228,5 +228,5 @@ int ViTTritonModel<T>::getPipelineParaSize()
 template struct ViTTritonModel<float>;
 template struct ViTTritonModel<half>;
 #ifdef ENABLE_BF16
-template struct ViTTritonModel<__nv_bfloat16>;
+// template struct ViTTritonModel<__nv_bfloat16>;
 #endif

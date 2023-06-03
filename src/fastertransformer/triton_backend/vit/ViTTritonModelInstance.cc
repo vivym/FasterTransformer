@@ -135,5 +135,5 @@ void ViTTritonModelInstance<T>::freeBuffer()
 template struct ViTTritonModelInstance<float>;
 template struct ViTTritonModelInstance<half>;
 #ifdef ENABLE_BF16
-template struct ViTTritonModelInstance<__nv_bfloat16>;
+// template struct ViTTritonModelInstance<__nv_bfloat16>;
 #endif
