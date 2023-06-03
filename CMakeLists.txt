@@ -375,6 +375,7 @@ add_library(transformer-shared SHARED
   $<TARGET_OBJECTS:beam_search_penalty_kernels>
   $<TARGET_OBJECTS:beam_search_topk_kernels>
   $<TARGET_OBJECTS:bert_preprocess_kernels>
+  $<TARGET_OBJECTS:vit_kernels>
   $<TARGET_OBJECTS:calibrate_quantize_weight_kernels>
   $<TARGET_OBJECTS:cublasAlgoMap>
   $<TARGET_OBJECTS:cublasMMWrapper>
