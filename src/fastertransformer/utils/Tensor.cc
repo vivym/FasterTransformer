@@ -105,6 +105,9 @@ int Tensor::parseNpyHeader(FILE*& f_ptr, uint32_t header_len, DataType& type, st
     start = header.find("'descr'") + 7;
     start = header.find("'", start);
     end   = header.find("'", start + 1);
+    if (header[start + 1] == "<") {
+        ++start;
+    }
     type  = typeFromNumpyDesc(header.substr(start + 1, end - start - 1));
 
     start = header.find("'fortran_order'") + 15;
